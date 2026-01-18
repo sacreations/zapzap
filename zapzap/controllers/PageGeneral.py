@@ -79,6 +79,9 @@ class PageGeneral(QWidget, Ui_PageGeneral):
         self.dontUseNativeDialog.setChecked(
             SettingsManager.get("system/DontUseNativeDialog", False))
 
+        self.btn_native_context_menu.setChecked(
+            SettingsManager.get("system/native_context_menu", False))
+
     def _configure_signals(self):
         """
         Conecta os sinais dos widgets aos respectivos manipuladores:
@@ -108,6 +111,9 @@ class PageGeneral(QWidget, Ui_PageGeneral):
 
         self.dontUseNativeDialog.clicked.connect(
             lambda: SettingsManager.set("system/DontUseNativeDialog", self.dontUseNativeDialog.isChecked()))
+
+        self.btn_native_context_menu.clicked.connect(
+            lambda: SettingsManager.set("system/native_context_menu", self.btn_native_context_menu.isChecked()))
 
     def _handle_toggled_spellcheck(self, toggled):
         SettingsManager.set("system/spellCheckers", toggled)

@@ -111,37 +111,147 @@ class WebView(QWebEngineView):
     def contextMenuEvent(self, event):
         """Cria o menu de contexto personalizado ao clicar com o botão direito."""
         print("Abre o contextMenuEvent...")
+        
+        # Capture necessary data from the event immediately
+        global_pos = event.globalPos()
+        pos = event.pos()
+        
+        # Define the success callback for JS
+        def handle_result(is_message):
+            print(f"JS Check Result: is_message={is_message}")
+            if is_message:
+                print("Click on message detected - WhatsApp native menu should appear")
+                return
+            
+            print("Not a message - showing Qt context menu")
+            self._show_qt_context_menu(global_pos)
+            
+        # Define error callback
+        def handle_error():
+            print("JS Check Failed or Timed out - showing fallback Qt menu")
+            self._show_qt_context_menu(global_pos)
 
-        # Criação do menu de contexto padrão
-        menu = self.createStandardContextMenu()
+        # Check if native menu is enabled in settings (Default: False - Qt Menu)
+        use_native_menu = SettingsManager.get("system/native_context_menu", False)
 
-        # 1. Remoção de ações indesejadas
-        actions_to_remove = [
-            'Back', 'View page source', 'Save page', 'Forward',
-            'Open link in new tab', 'Save link', 'Open link in new window',
-            'Paste and match style', 'Reload', 'Copy image address'
-        ]
-        menu = self._remove_actions(menu, actions_to_remove)
+        # Check if the clicked element is a WhatsApp message via JS
+        if use_native_menu:
+            self._check_message_and_trigger(pos, handle_result)
+        else:
+            self._show_qt_context_menu(global_pos)
 
-        # 2. Aplicação de traduções às ações
-        translations = {
-            'Undo': _('Undo'), 'Redo': _('Redo'), 'Cut': _('Cut'),
-            'Copy': _('Copy'), 'Paste': _('Paste'), 'Select all': _('Select all'),
-            'Save image': _('Save image'), 'Copy image': _('Copy image'),
-            'Copy link address': _('Copy link address')
-        }
-        self._translate_actions(menu, translations)
+    def _show_qt_context_menu(self, global_pos):
+        """Show the Qt context menu."""
+        print("Creating and showing Qt context menu...")
+        try:
+            # Criação do menu de contexto padrão
+            menu = self.createStandardContextMenu()
+            
+            if not menu:
+                print("Error: createStandardContextMenu returned None")
+                return
 
-        # 3. Adiciona novo comportamento para "Copy link address"
-        self._set_copy_link_behavior(menu)
+            # 1. Remoção de ações indesejadas
+            actions_to_remove = [
+                'Back', 'View page source', 'Save page', 'Forward',
+                'Open link in new tab', 'Save link', 'Open link in new window',
+                'Paste and match style', 'Reload', 'Copy image address'
+            ]
+            menu = self._remove_actions(menu, actions_to_remove)
 
-        # 4. Configuração de correção ortográfica
-        self._add_spellcheck_actions(menu)
+            # 2. Aplicação de traduções às ações
+            translations = {
+                'Undo': _('Undo'), 'Redo': _('Redo'), 'Cut': _('Cut'),
+                'Copy': _('Copy'), 'Paste': _('Paste'), 'Select all': _('Select all'),
+                'Save image': _('Save image'), 'Copy image': _('Copy image'),
+                'Copy link address': _('Copy link address')
+            }
+            self._translate_actions(menu, translations)
 
-        # Exibição do menu de contexto
-        menu.exec(event.globalPos())
+            # 3. Adiciona novo comportamento para "Copy link address"
+            self._set_copy_link_behavior(menu)
+            
+            # 4. Restore spellcheck options
+            self._add_spellcheck_actions(menu)
+            
+            # Show the menu
+            print(f"Executing menu at {global_pos}")
+            menu.exec(global_pos)
+            print("Menu closed")
+            
+        except Exception as e:
+            print(f"Error showing menu: {e}")
+            import traceback
+            traceback.print_exc()
 
-    # Métodos auxiliares
+    # Helper methods
+    def _check_message_and_trigger(self, pos, callback):
+        """Check if clicked element is a WhatsApp message and trigger native menu."""
+        # JavaScript to check if the element at the click position is a message
+        # and trigger WhatsApp's native context menu
+        script = f"""
+        (function() {{
+            try {{
+                // Get the element at the click position
+                var element = document.elementFromPoint({pos.x()}, {pos.y()});
+                if (!element) return false;
+                
+                // Check if the element or any parent is a WhatsApp message
+                // Selectors target message container classes and data attributes
+                var messageElement = element.closest('[data-id], .message-in, .message-out, ._amk4, ._amk6, ._amjy, [role="row"]');
+                
+                if (messageElement) {{
+                    // First, ensure the message thinks it's being hovered so the arrow appears
+                    var mouseOver = new MouseEvent('mouseover', {{
+                        bubbles: true,
+                        cancelable: true,
+                        view: window
+                    }});
+                    messageElement.dispatchEvent(mouseOver);
+                    
+                    // Strategy: Find the menu trigger button using the specific icon 'ic-chevron-down-menu'
+                    // look for the icon itself or the button wrapper containing it
+                    var trigger = messageElement.querySelector('[data-icon="ic-chevron-down-menu"], [data-icon="down-context"]');
+                    
+                    if (!trigger) {{
+                        trigger = messageElement.querySelector('div[role="button"]:has(span[data-icon="ic-chevron-down-menu"])');
+                    }}
+                    
+                     if (!trigger) {{
+                       trigger = messageElement.querySelector('span[data-icon="ic-chevron-down-menu"]');
+                    }}
+
+                    if (trigger) {{
+                        // Click the trigger
+                        var clickEvent = new MouseEvent('click', {{
+                            bubbles: true,
+                            cancelable: true,
+                            view: window,
+                            button: 0, 
+                            buttons: 1
+                        }});
+                        
+                        // click the PARENT of the icon usually, as the icon is just an SVG
+                        var clickable = trigger.closest('[role="button"]') || trigger;
+                        clickable.dispatchEvent(clickEvent);
+                        
+                        return true; // Triggered!
+                    }}
+                    
+                    return false; // Found message but no trigger
+                }}
+                
+                return false;  // Not a message
+            }} catch (e) {{
+                return false;
+            }}
+        }})();
+        """
+        
+        # Execute the script with callback
+        self.page().runJavaScript(script, callback)
+    
+    
     def _remove_actions(self, menu, actions_to_remove):
         """Remove ações indesejadas do menu."""
         for action in menu.actions():
@@ -289,15 +399,11 @@ class WebView(QWebEngineView):
         logger.info(f"Nome do perfil: {profile.storageName()}")
         logger.info(f"Cache Path: {profile.cachePath()}")
         logger.info(f"Http Cache Type: {profile.httpCacheType().name}")
-        logger.info(f"""Tamanho Máximo do Cache HTTP (Bytes): {
-                    profile.httpCacheMaximumSize()}""")
-        logger.info(f"""Persistent Cookies Policy: {
-                    profile.persistentCookiesPolicy().name}""")
-        logger.info(f"""Path do Armazenamento Persistente: {
-                    profile.persistentStoragePath()}""")
+        logger.info(f"Tamanho Máximo do Cache HTTP (Bytes): {profile.httpCacheMaximumSize()}")
+        logger.info(f"Persistent Cookies Policy: {profile.persistentCookiesPolicy().name}")
+        logger.info(f"Path do Armazenamento Persistente: {profile.persistentStoragePath()}")
         logger.info(f"Path de Download: {profile.downloadPath()}")
         logger.info(f"User Agent: {profile.httpUserAgent()}")
         logger.info(f"Spell Check Habilitado: {profile.isSpellCheckEnabled()}")
-        logger.info(f"""Linguagens do Spell Check: {
-                    profile.spellCheckLanguages()}""")
+        logger.info(f"Linguagens do Spell Check: {profile.spellCheckLanguages()}")
         logger.info("=========================================")
