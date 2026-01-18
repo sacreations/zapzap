@@ -136,3 +136,10 @@ dmypy.json
 
 # Editor (IDE) files
 .idea
+
+# Arch Linux Packaging
+pkg/
+src/
+zapzap-src/
+*.pkg.tar.zst
+*.pkg.tar.xz
