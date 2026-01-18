@@ -1,133 +1,32 @@
-# [ZapZap](https://rtosta.com/zapzap-web/) – WhatsApp Desktop for Linux
-![ZapZap for WhatsApp](share/screenshot/default.png)
+# ZapZap - Personal Fork
 
-## 📌 About
+This is a personal fork of ZapZap for custom modifications and personal use.
 
-ZapZap brings the WhatsApp experience on Linux closer to that of a native application.  
-Since Meta does not provide a public API for third-party applications, ZapZap is developed as a [Progressive Web Application (PWA)](https://en.wikipedia.org/wiki/Progressive_web_app), built with **PyQt6 + PyQt6-WebEngine**.
+**Original Repository:** [rafatosta/zapzap](https://github.com/rafatosta/zapzap)
 
----
+## About ZapZap
 
-## 📥 Download
+ZapZap is an unofficial WhatsApp Desktop application for Linux, built with PyQt6 + PyQt6-WebEngine.
 
-- **[Flathub](https://flathub.org/apps/details/com.rtosta.zapzap)**  
-- **[Fedora Copr](https://copr.fedorainfracloud.org/coprs/rafatosta/zapzap/)**  
+## Installation (Arch Linux)
 
----
+This fork includes a `PKGBUILD` for easy system-wide installation on Arch Linux:
 
-## ✨ Features
-
-ZapZap extends WhatsApp Web with additional features:
-
-### 🎨 Appearance
-- Adaptive **light and dark mode**
-- **Fullscreen mode**
-- Custom **window decorations**
-- **Interface scaling adjustment** (ideal for 2K/4K screens)
-
-### ⚡ Usability
-- **Keyboard shortcuts** for main options
-- Adaptive **system tray icon** (notifies new messages)
-- **Background process** support
-- **Drag-and-drop** functionality
-- Ability to select a **custom folder for downloads**
-- **Temporary folder** for opening files
-
-### 🛠️ Extras
-- **Spellchecker** with language selection via context menu
-- Customizable **system tray icons**
-- Option to choose a **folder for custom dictionaries**
-- Setting to **disable the native file selection dialog** (Hyprland)
-- **Reorganized Settings Panel**
-- Added **Performance section**
-
----
-
-## ⚙️ Development
-
-ZapZap is built using **PyQt6** and **PyQt6-WebEngine**.
-
-### Requirements
-- **Python 3.9 or higher**
-
-#### System Dependencies
-Some Python dependencies (notably dbus-python) require system libraries to be present at build time.
-
-##### Fedora 43 (and newer)
-
-On Fedora 43, pip install -r requirements.txt may fail while compiling dbus-python due to the absence of the dbus-1 development files.
-
-Install the required system dependencies first:
 ```bash
-sudo dnf install -y dbus-devel pkg-config gcc python3-devel
+makepkg -si
 ```
 
-After that, install the Python dependencies normally:
-```bash
-pip install -r requirements.txt
-```
+## Requirements
 
+- Python 3.9+
+- PyQt6
+- PyQt6-WebEngine
+- dbus-python
 
-### Installation
+## License
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/rafatosta/zapzap.git
-   cd zapzap
-   ```
+GPL-3.0 - See the [original repository](https://github.com/rafatosta/zapzap) for full license details.
 
-2. **Install dependencies**
-    ```bash
-    pip install -r requirements.txt
-    ```
+## Credits
 
-3. Build & Run Locally
-    ```bash
-    python run.py [dev|preview|build] [--build-translations | --appimage | --flatpak-onefile]
-    ```
-
-The executable will be generated in the dist/ folder as zapzap.flatpak.
-(Currently without full support)
-
-#### Install as Python module
-```bash
-pip install .
-```
-
-#### Uninstall:
-```bash
-pip uninstall zapzap
-```
-
-#### uv tool
-Provides a global `zapzap` command in isolated environment.
-```bash
-uv tool install . --with-requirements requirements.txt
-```
-
-## 📦 Packaging
-- **[Fedora Copr](/fedora_copr.spec)** 
-- **[Flatpak](https://github.com/flathub/com.rtosta.zapzap)**
-
-## 🌍 Translation
-ZapZap supports translations. If your language file is missing from the [po](/po) folder, submit a pull request or open an [issue](https://github.com/rafatosta/zapzap/issues).
-
-## 🤝 Contributions
-Contributions are welcome!
-Please submit a pull request with any improvements or changes you wish to propose.
-
-## 📜 License
-This project is licensed under the GPL.
-See the LICENSE file for more information.
-
-## 💖 Donations
-**PayPal:** [Donate via PayPal](https://www.paypal.com/donate/?business=E7R4BVR45GRC2&no_recurring=0&item_name=ZapZap+-+Whatsapp+Desktop+for+linux%0AAn+unofficial+WhatsApp+desktop+application+written+in+Pyqt6+%2B+PyQt6-WebEngine.&currency_code=USD) 
-
-**Pix:** [Donate via Pix](https://nubank.com.br/pagar/3c3r2/LS2hiJJKzv) 
-
-**Ko-fi:** [Donate via Ko-fi](https://ko-fi.com/X8X2E1OLG)
-
-## 📬 Contact
-**Maintainer:** Rafael Tosta 
-
-**Email:** [rafa.ecomp@gmail.com](mailto:rafa.ecomp@gmail.com)
+Original author: [Rafael Tosta](https://github.com/rafatosta)
