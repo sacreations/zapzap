@@ -1,6 +1,6 @@
 # Maintainer: Supun Adithya <contact@supunadithya.com>
 pkgname=zapzap
-pkgver=6.2.7
+pkgver=6.2.8
 pkgrel=1
 pkgdesc="WhatsApp Messenger for Linux"
 arch=('any')
